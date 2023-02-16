@@ -1,0 +1,220 @@
+#NOTE: these configs apply only to local dev environment
+server:
+  port: 8000
+
+#  Spring configs
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 60s
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "https://servicesx.netlify.app"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+#       Users microservice endpoints
+        - id: userLogin
+          uri: lb://users
+          predicates:
+            - Method=POST
+            - Path=/login
+
+        - id: userRefreshToken
+          uri: lb://users
+          predicates:
+            - Method=POST
+            - Path=/refresh_token
+          filters:
+            - RewritePath=/refresh_token, /users/refresh_token
+
+        - id: userRegister
+          uri: lb://users
+          predicates:
+            - Method=POST
+            - Path=/register
+          filters:
+            - RewritePath=/register, /users/register
+
+        - id: userLogout
+          uri: lb://users
+          predicates:
+            - Method=POST
+            - Path=/logout
+          filters:
+            - RewritePath=/logout, /users/logout
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: company
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/company/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: employeeCompleteRegister
+          uri: lb://users
+          predicates:
+            - Method=POST
+            - Path=/employee/register/**
+          filters:
+            - RemoveRequestHeader=Cookie
+
+        - id: verification
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/verify/email
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: verification
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/verify/email/**
+          filters:
+            - RemoveRequestHeader=Cookie
+
+        - id: verification
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/verify/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: verification
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/password/reset/**
+          filters:
+            - RemoveRequestHeader=Cookie
+
+        - id: verification
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/password/request
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/password/request, /users/password/request
+
+        - id: androidAppInfo
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/.well-known/assetlinks.json
+          filters:
+            - RemoveRequestHeader=Cookie
+
+        - id: users
+          uri: lb://users
+          predicates:
+            - Method=GET, POST, DELETE, PUT
+            - Path=/users/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+#       Orders microservice endpoints
+        - id: orders
+          uri: lb://orders
+          predicates:
+            - Path=/my/orders/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: orders
+          uri: lb://orders
+          predicates:
+            - Path=/orders/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: orders
+          uri: lb://orders
+          predicates:
+            - Path=/business/orders/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+#       Media microservice endpoints
+        - id: media
+          uri: lb://media
+          predicates:
+            - Path=/api/files/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+#       Notification microservice endpoints
+        - id: notification
+          uri: lb://notification
+          predicates:
+            - Path=/notification/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        #       Root user endpoints
+        - id: root
+          uri: lb://users
+          predicates:
+            - Path=/root/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: root
+          uri: lb://orders
+          predicates:
+            - Path=/orders/root/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        #       Chat microservice endpoints
+        - id: chat
+          uri: lb://chat
+          predicates:
+            - Path=/chat/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+        - id: chat
+          uri: lb://chat
+          predicates:
+            - Path=/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - AuthorizationHeaderFilter
+
+#  Eureka configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.49.2:30888/eureka
+  instance:
+    instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    status-page-url-path: /actuator/health
+    prefer-ip-address: true
+debug: true

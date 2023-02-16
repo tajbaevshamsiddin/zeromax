@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: users
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: user
+  template:
+    metadata:
+      labels:
+        name: user
+    spec:
+      containers:
+        - name: backend-users
+          image: tajbaevsh/users:latest
+          ports:
+            - containerPort: 8001
+ 
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+spec:
+  selector:
+    name: user
+  type: NodePort
+  ports:
+    - port: 8003
+      nodePort: 30001
+
+

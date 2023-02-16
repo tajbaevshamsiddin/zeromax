@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaterway-deployment
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: gaterway
+  template:
+    metadata:
+      labels:
+        app: gaterway
+    spec:
+      containers:
+        - name: gaterway
+          image: tajbaevsh/gaterway:latest
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media
+spec:
+  selector:
+    matchLabels:
+      app: media
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: media
+    spec:
+      containers:
+        - name: media
+          image: tajbaevsh/shama_media:latest
+          ports:
+            - containerPort: 8009
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media
+  labels:
+    app: media
+spec:
+  type: NodePort
+  ports:
+    - port: 8009
+      nodePort: 30009
+  selector:
+    app: media
